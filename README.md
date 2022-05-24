@@ -1,2 +1,0 @@
-# basket-budget
-Class Project 
