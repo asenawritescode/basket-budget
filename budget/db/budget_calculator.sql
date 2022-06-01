@@ -10,8 +10,7 @@
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET AUTOCOMMIT = 0;
 START TRANSACTION;
-SET time_zone = "+00:00";
-
+SET time_zone = "+03:00";
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -25,14 +24,16 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Table structure for table `budget`
+-- Table structure for table `budget` and `expense`
 --
 
 CREATE TABLE `budget` (
   `id` int(11) NOT NULL,
   `name` varchar(100) NOT NULL,
-  `amount` varchar(50) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+  `amount` varchar(50) NOT NULL,
+  `date_created` datetime NOT NULL DEFAULT current_timestamp(),
+  `date_end` date NOT NULL 
+) ENGINE=InnoDB DEFAULT CHARSET = utf8;
 
 --
 -- Indexes for dumped tables
@@ -52,6 +53,37 @@ ALTER TABLE `budget`
 -- AUTO_INCREMENT for table `budget`
 --
 ALTER TABLE `budget`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+COMMIT;
+
+
+
+CREATE TABLE `expense` (
+  `id` int(11) NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `type` varchar(50) NOT NULL,
+  `amount` varchar(50) NOT NULL,
+  `date_created` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET = utf8;
+
+--
+-- Indexes for dumped tables
+--
+
+--
+-- Indexes for table `budget`
+--
+ALTER TABLE `expense`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- AUTO_INCREMENT for dumped tables
+--
+
+--
+-- AUTO_INCREMENT for table `expense`
+--
+ALTER TABLE `expense`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 COMMIT;
 
