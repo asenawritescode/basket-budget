@@ -1,9 +1,22 @@
+<?
+// Initialize the session
+session_start();
+
+
+// Check if the user is logged in, if not then redirect him to login page
+if($_SESSION["loggedin"] !== true){
+    header("location: login.php");
+    exit;
+}
+?>
+
 <?php require_once 'process.php'; ?>
 <?php $con = new mysqli("localhost","root","","budget_calculator"); ?>
 <?php  if(isset($_SESSION['message'])): ?>
 
-
 <?php endif ?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -41,22 +54,49 @@
 </head>
 
 <body>
+    <script src="assets/js/jquery-3.2.1.min.js"></script>	
+    <script src="assets/js/bootstrap.js"></script>
+    
+    <!-- Modal -->
+
+        <div class="modal fade" id="myModal" role="dialog">
+        <div class="modal-dialog">
+
+            <!-- Modal content-->
+            <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Modal Header</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="hidden" name="user_id" value="<?php echo $id?>"/>
+                    <input type="text" name="name" value="<?php echo $name?>" class="form-control" required="required"/>
+                </div>
+                <div class="form-group">
+                    <label>Amount</label>
+                    <input type="text" name="amount" value="<?php echo $amount?>" class="form-control" required="required" />
+                </div>
+                <div class="form-group">
+                    <label>Date End</label>
+                    <input type="text" name="date_end" value="<?php echo $date_end?>" class="form-control" required="required"/>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Save</button>
+            </div>
+            </div>
+            
+        </div>
+        </div>
+
+    <!--End Modal -->
+
+
     <div class="wrappar">
         <?php require_once('includes/sidebar.php') ?>
-        <!-- Content -->
-        <!-- <div id="contentdiff">
-            <nav class="navbar navbar-default">
-            <div class="userinfo">
-                <ul class="nav navbar-nav navbar-right">
-                <li>
-                    <a id="logoutuser" href="#"><i class="zmdi zmdi-notifications text-danger"></i> Hey User</a>
-                </li>
-                </ul>
-            </div>
-            </nav>
-        </div> -->
-        <!-- Creating a navigation bar using the
-            .navbar class of bootstrap -->
         <div class="main-panal">
             <?php require_once('includes/navbar.php') ?>
             <!-- removed the breaks in the line -->
@@ -74,7 +114,7 @@
                                     value="<?php echo $name; ?>">
                             </div>
 
-                            <div class="form-group">
+                            <div class="form-group">    
                                 <label for="amount">Amount</label>
                                 <input type="text" name="amount" class="form-control" id="amount"
                                     placeholder="Enter Amount" required value="<?php echo $amount; ?>">
@@ -82,13 +122,13 @@
                             
                             <div class="form-group">
                                 <label for="date_start">Pick End Date</label>
-                                <input type="date" class="form-control form-control-sm" name="date_end" value="<?php echo date("Y-m-d",strtotime($date_end)) ?>">
+                                <input type="date" class="form-control form-control-sm" required="required" name="date_end" value="<?php echo date("Y-m-d",strtotime($date_end)) ?>">
                             </div>
 
                             <?php if($update == true): ?>
-                            <button type="submit" name="update" class="btn btn-success btn-block">Update</button>
+                            <button type="submit" name="update" class="btn btn-success btn-block">Update</button> 
                             <?php else: ?>
-                            <button type="submit" name="save" class="btn btn-primary btn-block">Save</button>
+                            <button type="submit" name="save" class="btn btn-primary btn-block">Allocate</button>
                             <?php endif; ?>
                         </form>
                     </div>
@@ -100,7 +140,7 @@
                         <?php 
 
                             if(isset($_SESSION['message'])){
-                                echo    "<div class='alert alert-{$_SESSION['msg_type']} alert-dismissible fade show ' role='alert'>
+                                echo    "<div id='message' class='alert alert-{$_SESSION['msg_type']} alert-dismissible fade show ' role='alert'>
                                             <strong> {$_SESSION['message']} </strong>
                                             <button type='button' class='close' data-dismiss='alert' aria-label='Close'>
                                                 <span aria-hidden='true'>&times;</span>
@@ -108,14 +148,14 @@
                                         </div>
                                         ";
                             }
-
+                            session_unset();
                         ?>
                         <h2>Budget List</h2>
                         <hr>
 
                         <?php 
                             
-                            $result = mysqli_query($con, "SELECT * FROM budget");
+                            $result = mysqli_query($con, "SELECT * FROM budget ORDER BY id DESC LIMIT 10");
                         ?>
                         <div class="row justify-content-center">
                             <table class="table">
@@ -133,21 +173,20 @@
                                     <td><?php echo $row['name']; ?></td>
                                     <td> KES <?php echo $row['amount']; ?></td>
                                     <td> <?php
-                                         $now = time(); // or your date as well
+                                         $now = time(); 
+                                        //  unix time conversion 
                                          $your_date = strtotime($row['date_end']);
                                          $datediff = $your_date - $now;
                                          echo round($datediff / (60 * 60 * 24));
                                          ?>
                                     </td>
                                     <td>
-                                        <a href="index.php?edit=<?php echo $row['id']; ?>"
+                                        <a href="budget.php?edit=<?php echo $row['id']; ?>"
                                             class="btn btn-success">Update</a>
                                         <a href="process.php?delete=<?php echo $row['id']; ?>"
                                             class="btn btn-danger">Delete</a>
                                     </td>
                                 </tr>
-
-
                                 <?php endwhile ?>
                             </table>
                         </div>
@@ -159,6 +198,10 @@
         <script src="assets/js/jquery-3.2.1.slim.min.js"></script>
         <script src="assets/js/popper.min.js"></script>
         <script src="assets/js/bootstrap.min.js"></script>
+        <script src="includes/js/remove-alert.js"></script>
+        <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script> -->
+        <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js"></script> -->
+        <!-- <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"></script> -->
     </div>
 </body>
 

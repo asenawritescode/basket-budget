@@ -1,3 +1,22 @@
+<?
+// Initialize the session
+session_start();
+
+
+// Check if the user is logged in, if not then redirect him to login page
+if($_SESSION["loggedin"] !== true){
+    header("location: login.php");
+    exit;
+}
+?>
+
+<?php require_once 'process.php'; ?>
+<?php $con = new mysqli("localhost","root","","budget_calculator"); ?>
+<?php  if(isset($_SESSION['message'])): ?>
+
+
+<?php endif ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -6,16 +25,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Budget Management System</title>
     <link rel="stylesheet" href="assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/material-design-iconic-font/2.2.0/css/material-design-iconic-font.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous" />
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/material-design-iconic-font/2.2.0/css/material-design-iconic-font.min.css">
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <style>
     #contentwrap {
         height: 100%;
         width: 87%;
         position: relative;
+        padding: 2rem;
     }
 
     #contentdiff {
@@ -32,177 +51,494 @@
         float: right;
         width: calc(100% - 260px);
     }
-    .card {
-    background-color: #fff;
-    border-radius: 10px;
-    border: none;
-    position: relative;
-    margin-bottom: 30px;
-    box-shadow: 0 0.46875rem 2.1875rem rgba(90,97,105,0.1), 0 0.9375rem 1.40625rem rgba(90,97,105,0.1), 0 0.25rem 0.53125rem rgba(90,97,105,0.12), 0 0.125rem 0.1875rem rgba(90,97,105,0.1);
-}
-.l-bg-cherry {
-    background: linear-gradient(to right, #493240, #f09) !important;
-    color: #fff;
-}
 
-.l-bg-blue-dark {
-    background: linear-gradient(to right, #373b44, #4286f4) !important;
-    color: #fff;
-}
+    .card-counter {
+        box-shadow: 2px 2px 10px #DADADA;
+        margin: 5px;
+        padding: 20px 10px;
+        background-color: #fff;
+        height: 100px;
+        border-radius: 5px;
+        transition: .3s linear all;
+    }
 
-.l-bg-green-dark {
-    background: linear-gradient(to right, #0a504a, #38ef7d) !important;
-    color: #fff;
-}
+    .card-counter:hover {
+        box-shadow: 4px 4px 20px #DADADA;
+        transition: .3s linear all;
+    }
 
-.l-bg-orange-dark {
-    background: linear-gradient(to right, #a86008, #ffba56) !important;
-    color: #fff;
-}
+    .card-counter.primary {
+        background-color: #007bff;
+        color: #FFF;
+    }
 
-.card .card-statistic-3 .card-icon-large .fas, .card .card-statistic-3 .card-icon-large .far, .card .card-statistic-3 .card-icon-large .fab, .card .card-statistic-3 .card-icon-large .fal {
-    font-size: 110px;
-}
+    .card-counter.danger {
+        background-color: #ef5350;
+        color: #FFF;
+    }
 
-.card .card-statistic-3 .card-icon {
-    text-align: center;
-    line-height: 50px;
-    margin-left: 15px;
-    color: #000;
-    position: absolute;
-    right: -5px;
-    top: 20px;
-    opacity: 0.1;
-}
+    .card-counter.success {
+        background-color: #66bb6a;
+        color: #FFF;
+    }
 
-.l-bg-cyan {
-    background: linear-gradient(135deg, #289cf5, #84c0ec) !important;
-    color: #fff;
-}
+    .card-counter.info {
+        background-color: #26c6da;
+        color: #FFF;
+    }
 
-.l-bg-green {
-    background: linear-gradient(135deg, #23bdb8 0%, #43e794 100%) !important;
-    color: #fff;
-}
+    .card-counter i {
+        font-size: 5em;
+        opacity: 0.2;
+    }
 
-.l-bg-orange {
-    background: linear-gradient(to right, #f9900e, #ffba56) !important;
-    color: #fff;
-}
+    .card-counter .count-numbers {
+        position: absolute;
+        right: 35px;
+        top: 20px;
+        font-size: 32px;
+        display: block;
+    }
 
-.l-bg-cyan {
-    background: linear-gradient(135deg, #289cf5, #84c0ec) !important;
-    color: #fff;
-}
+    .card-counter .count-name {
+        position: absolute;
+        right: 35px;
+        top: 65px;
+        font-style: italic;
+        text-transform: capitalize;
+        opacity: 0.5;
+        display: block;
+        font-size: 18px;
+    }
     </style>
+
 </head>
 
 <body>
     <div class="wrappar">
         <?php require_once('includes/sidebar.php') ?>
- 
-        <div class="main-panal">
-        <?php require_once('includes/navbar.php') ?>
 
-            <br /><br /><br />
-            <div class="col-md-10 ">
-                <div class="row ">
-                    <div class="col-xl-3 col-lg-6">
-                        <div class="card l-bg-cherry">
-                            <div class="card-statistic-3 p-4">
-                                <div class="card-icon card-icon-large"><i class="fas fa-shopping-cart"></i></div>
-                                <div class="mb-4">
-                                    <h5 class="card-title mb-0">Total Budget</h5>
-                                </div>
-                                <div class="row align-items-center mb-2 d-flex">
-                                    <div class="col-8">
-                                        <h2 class="d-flex align-items-center mb-0">
-                                            KES 3,243
-                                        </h2>
-                                    </div>
-                                    <div class="col-4 text-right">
-                                        <span>12.5% <i class="fa fa-arrow-up"></i></span>
-                                    </div>
-                                </div>
-                                <div class="progress mt-1 " data-height="8" style="height: 8px;">
-                                    <div class="progress-bar l-bg-cyan" role="progressbar" data-width="25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100" style="width: 25%;"></div>
-                                </div>
-                            </div>
+        <div class="main-panal">
+            <?php require_once('includes/navbar.php') ?>
+            <!-- removed the breaks in the line -->
+                <div class="row" style="margin: 2em;">
+                    <div class="col-md-3">
+                        <div class="card-counter primary">
+                            <i class="fa fa-money"></i>
+                            <span class="count-numbers">12</span>
+                            <span class="count-name">Income</span>
                         </div>
                     </div>
-                    <div class="col-xl-3 col-lg-6">
-                        <div class="card l-bg-blue-dark">
-                            <div class="card-statistic-3 p-4">
-                                <div class="card-icon card-icon-large"><i class="fas fa-users"></i></div>
-                                <div class="mb-4">
-                                    <h5 class="card-title mb-0">Total Expenses</h5>
-                                </div>
-                                <div class="row align-items-center mb-2 d-flex">
-                                    <div class="col-8">
-                                        <h2 class="d-flex align-items-center mb-0">
-                                            KSH 1,500
-                                        </h2>
-                                    </div>
-                                    <div class="col-4 text-right">
-                                        <span>9.23% <i class="fa fa-arrow-up"></i></span>
-                                    </div>
-                                </div>
-                                <div class="progress mt-1 " data-height="8" style="height: 8px;">
-                                    <div class="progress-bar l-bg-green" role="progressbar" data-width="25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100" style="width: 25%;"></div>
-                                </div>
-                            </div>
+
+                    <div class="col-md-3">
+                        <div class="card-counter success">
+                            <i class="fa fa-shopping-basket"></i>
+                            <span class="count-numbers">599</span>
+                            <span class="count-name">Budget</span>
                         </div>
                     </div>
-                    <div class="col-xl-3 col-lg-6">
-                        <div class="card l-bg-green-dark">
-                            <div class="card-statistic-3 p-4">
-                                <div class="card-icon card-icon-large"><i class="fas fa-ticket-alt"></i></div>
-                                <div class="mb-4">
-                                    <h5 class="card-title mb-0">Total Savings</h5>
-                                </div>
-                                <div class="row align-items-center mb-2 d-flex">
-                                    <div class="col-8">
-                                        <h2 class="d-flex align-items-center mb-0">
-                                            KSH 578
-                                        </h2>
-                                    </div>
-                                    <div class="col-4 text-right">
-                                        <span>10% <i class="fa fa-arrow-up"></i></span>
-                                    </div>
-                                </div>
-                                <div class="progress mt-1 " data-height="8" style="height: 8px;">
-                                    <div class="progress-bar l-bg-orange" role="progressbar" data-width="25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100" style="width: 25%;"></div>
-                                </div>
-                            </div>
+
+                    <div class="col-md-3">
+                        <div class="card-counter danger">
+                            <i class="fa fa-credit-card"></i>
+                            <span class="count-numbers">6875</span>
+                            <span class="count-name">Expenses</span>
                         </div>
                     </div>
-                    <div class="col-xl-3 col-lg-6">
-                        <div class="card l-bg-orange-dark">
-                            <div class="card-statistic-3 p-4">
-                                <div class="card-icon card-icon-large"><i class="fas fa-dollar-sign"></i></div>
-                                <div class="mb-4">
-                                    <h5 class="card-title mb-0">Cashflow Today</h5>
-                                </div>
-                                <div class="row align-items-center mb-2 d-flex">
-                                    <div class="col-8">
-                                        <h2 class="d-flex align-items-center mb-0">
-                                            KES 0
-                                        </h2>
-                                    </div>
-                                    <div class="col-4 text-right">
-                                        <span>2.5% <i class="fa fa-arrow-up"></i></span>
-                                    </div>
-                                </div>
-                                <div class="progress mt-1 " data-height="8" style="height: 8px;">
-                                    <div class="progress-bar l-bg-cyan" role="progressbar" data-width="25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100" style="width: 25%;"></div>
-                                </div>
-                            </div>
+
+                    <div class="col-md-3">
+                        <div class="card-counter info">
+                            <i class="fa fa-usd "></i>
+                            <span class="count-numbers">35</span>
+                            <span class="count-name">Savings</span>
                         </div>
                     </div>
                 </div>
+            <hr></hr>
+          <div class="row" style="margin: 2em; height: 500px !important;">
+              <div class="col-md-4">
+
+                <h3>Budget Data</h3>
+                <table class="table table-striped table-bordered">
+                    <thead>
+                        <tr>
+                            <th style='width:50px;'>Name</th>
+                            <th style='width:50px;'>Amount</th>
+                            <th style='width:50px;'>Date Created</th>
+                            <th style='width:50px;'>Date End</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+
+                            if (isset($_GET['page_no']) && $_GET['page_no']!="") {
+                            $page_no = $_GET['page_no'];
+                            } else {
+                            $page_no = 1;
+                            }
+
+                            $total_records_per_page = 5;
+                            $offset = ($page_no-1) * $total_records_per_page;
+                            $previous_page = $page_no - 1;
+                            $next_page = $page_no + 1;
+                            $adjacents = "2"; 
+
+                            $result_count = mysqli_query($con,"SELECT COUNT(*) As total_records FROM `budget`");
+                            $total_records = mysqli_fetch_array($result_count);
+                            $total_records = $total_records['total_records'];
+                            $total_no_of_pages = ceil($total_records / $total_records_per_page);
+                            $second_last = $total_no_of_pages - 1; // total page minus 1
+
+                            $result = mysqli_query($con,"SELECT * FROM `budget` LIMIT $offset, $total_records_per_page");
+                            while($row = mysqli_fetch_array($result)){
+                            echo "<tr>
+                            <td>".$row['name']."</td>
+                            <td>".$row['amount']."</td>
+                            <td>".$row['date_created']."</td>
+                              <td>".$row['date_end']."</td>
+                              </tr>";
+                            }
+                            ?>
+                    </tbody>
+                </table>
+
+                <div style='padding: 10px 20px 0px; border-top: dotted 1px #CCC;'>
+                    <strong>Page <?php echo $page_no." of ".$total_no_of_pages; ?></strong>
+                </div>
+
+                <ul class="pagination">
+                    <?php // if($page_no > 1){ echo "<li><a href='?page_no=1'>First Page</a></li>"; } ?>
+
+                    <li <?php if($page_no <= 1){ echo "class='disabled'"; } ?>>
+                        <a <?php if($page_no > 1){ echo "href='?page_no=$previous_page'"; } ?>>Previous</a>
+                    </li>
+
+                    <?php 
+                  if ($total_no_of_pages <= 10){  	 
+                  for ($counter = 1; $counter <= $total_no_of_pages; $counter++){
+                  if ($counter == $page_no) {
+                  echo "<li class='active'><a>$counter</a></li>";	
+                  }else{
+                    echo "<li><a href='?page_no=$counter'>$counter</a></li>";
+                  }
+                  }
+                  }
+                  elseif($total_no_of_pages > 10){
+
+                  if($page_no <= 4) {			
+                  for ($counter = 1; $counter < 8; $counter++){		 
+                  if ($counter == $page_no) {
+                  echo "<li class='active'><a>$counter</a></li>";	
+                  }else{
+                    echo "<li><a href='?page_no=$counter'>$counter</a></li>";
+                  }
+                  }
+                  echo "<li><a>...</a></li>";
+                  echo "<li><a href='?page_no=$second_last'>$second_last</a></li>";
+                  echo "<li><a href='?page_no=$total_no_of_pages'>$total_no_of_pages</a></li>";
+                  }
+
+                  elseif($page_no > 4 && $page_no < $total_no_of_pages - 4) {		 
+                  echo "<li><a href='?page_no=1'>1</a></li>";
+                  echo "<li><a href='?page_no=2'>2</a></li>";
+                  echo "<li><a>...</a></li>";
+                  for ($counter = $page_no - $adjacents; $counter <= $page_no + $adjacents; $counter++) {			
+                    if ($counter == $page_no) {
+                  echo "<li class='active'><a>$counter</a></li>";	
+                  }else{
+                    echo "<li><a href='?page_no=$counter'>$counter</a></li>";
+                  }                  
+                  }
+                  echo "<li><a>...</a></li>";
+                  echo "<li><a href='?page_no=$second_last'>$second_last</a></li>";
+                  echo "<li><a href='?page_no=$total_no_of_pages'>$total_no_of_pages</a></li>";      
+                      }
+
+                  else {
+                  echo "<li><a href='?page_no=1'>1</a></li>";
+                  echo "<li><a href='?page_no=2'>2</a></li>";
+                  echo "<li><a>...</a></li>";
+
+                  for ($counter = $total_no_of_pages - 6; $counter <= $total_no_of_pages; $counter++) {
+                    if ($counter == $page_no) {
+                  echo "<li class='active'><a>$counter</a></li>";	
+                  }else{
+                    echo "<li><a href='?page_no=$counter'>$counter</a></li>";
+                  }                   
+                          }
+                      }
+                  }
+                  ?>
+
+                    <li <?php if($page_no >= $total_no_of_pages){ echo "class='disabled'"; } ?>>
+                        <a <?php if($page_no < $total_no_of_pages) { echo "href='?page_no=$next_page'"; } ?>>Next</a>
+                    </li>
+                    <?php if($page_no < $total_no_of_pages){
+                  echo "<li><a href='?page_no=$total_no_of_pages'>Last &rsaquo;&rsaquo;</a></li>";
+                  } ?>
+                </ul>
             </div>
+            <div class="col-md-4">
+
+                <h3>Expenses Data</h3>
+                <table class="table table-striped table-bordered">
+                    <thead>
+                        <tr>
+                            <th style='width:50px;'>Name</th>
+                            <th style='width:50px;'>Amount</th>
+                            <th style='width:50px;'>Date Created</th>
+                            <th style='width:50px;'>Date End</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+
+                            if (isset($_GET['page_no1']) && $_GET['page_no1']!="") {
+                            $page_no1 = $_GET['page_no1'];
+                            } else {
+                            $page_no1 = 1;
+                            }
+
+                            $total_records_per_page1 = 5;
+                            $offset1 = ($page_no1-1) * $total_records_per_page1;
+                            $previous_page1 = $page_no1 - 1;
+                            $next_page1 = $page_no1 + 1;
+                            $adjacents1 = "2"; 
+
+                            $result_count1 = mysqli_query($con,"SELECT COUNT(*) As total_records FROM `expense`");
+                            $total_records1 = mysqli_fetch_array($result_count1);
+                            $total_records1 = $total_records1['total_records'];
+                            $total_no_of_pages1 = ceil($total_records1 / $total_records_per_page1);
+                            $second_last1 = $total_no_of_pages1 - 1; // total page minus 1
+
+                            $result1 = mysqli_query($con,"SELECT * FROM `expense` LIMIT $offset1, $total_records_per_page1");
+                            while($row = mysqli_fetch_array($result1)){
+                            echo "<tr>
+                            <td>".$row['name']."</td>
+                            <td>".$row['type']."</td>
+                            <td>".$row['amount']."</td>
+                            <td>".$row['date_created']."</td>
+                              </tr>";
+                            }
+                            ?>
+                    </tbody>
+                </table>
+
+                <div style='padding: 10px 20px 0px; border-top: dotted 1px #CCC;'>
+                    <strong>Page <?php echo $page_no1." of ".$total_no_of_pages1; ?></strong>
+                </div>
+
+                <ul class="pagination">
+                    <?php // if($page_no > 1){ echo "<li><a href='?page_no=1'>First Page</a></li>"; } ?>
+
+                    <li <?php if($page_no1 <= 1){ echo "class='disabled'"; } ?>>
+                        <a <?php if($page_no1 > 1){ echo "href='?page_no=$previous_page1'"; } ?>>Previous</a>
+                    </li>
+
+                    <?php 
+                  if ($total_no_of_pages1 <= 10){  	 
+                  for ($counter1 = 1; $counter1 <= $total_no_of_pages1; $counter1++){
+                  if ($counter1 == $page_no1) {
+                  echo "<li class='active'><a>$counter1</a></li>";	
+                  }else{
+                    echo "<li><a href='?page_no=$counter1'>$counter1</a></li>";
+                  }
+                  }
+                  }
+                  elseif($total_no_of_pages1 > 10){
+
+                  if($page_no1 <= 4) {			
+                  for ($counter1 = 1; $counter1 < 8; $counter1++){		 
+                  if ($counter1 == $page_no1) {
+                  echo "<li class='active'><a>$counter1</a></li>";	
+                  }else{
+                    echo "<li><a href='?page_no=$counter1'>$counter1</a></li>";
+                  }
+                  }
+                  echo "<li><a>...</a></li>";
+                  echo "<li><a href='?page_no=$second_last1'>$second_last1</a></li>";
+                  echo "<li><a href='?page_no=$total_no_of_pages1'>$total_no_of_pages1</a></li>";
+                  }
+
+                  elseif($page_no1 > 4 && $page_no1 < $total_no_of_pages1 - 4) {		 
+                  echo "<li><a href='?page_no=1'>1</a></li>";
+                  echo "<li><a href='?page_no=2'>2</a></li>";
+                  echo "<li><a>...</a></li>";
+                  for ($counter1 = $page_no1 - $adjacents1; $counter1 <= $page_no1 + $adjacents1; $counter1++) {			
+                    if ($counter1 == $page_no1) {
+                  echo "<li class='active'><a>$counter1</a></li>";	
+                  }else{
+                    echo "<li><a href='?page_no=$counter1'>$counter1</a></li>";
+                  }                  
+                  }
+                  echo "<li><a>...</a></li>";
+                  echo "<li><a href='?page_no=$second_last1'>$second_last1</a></li>";
+                  echo "<li><a href='?page_no=$total_no_of_pages1'>$total_no_of_pages1</a></li>";      
+                      }
+
+                  else {
+                  echo "<li><a href='?page_no=1'>1</a></li>";
+                  echo "<li><a href='?page_no=2'>2</a></li>";
+                  echo "<li><a>...</a></li>";
+
+                  for ($counter1 = $total_no_of_pages1 - 6; $counter <= $total_no_of_pages1; $counter1++) {
+                    if ($counter1 == $page_no1) {
+                  echo "<li class='active'><a>$counter1</a></li>";	
+                  }else{
+                    echo "<li><a href='?page_no=$counter1'>$counter1</a></li>";
+                  }                   
+                          }
+                      }
+                  }
+                  ?>
+
+                    <li <?php if($page_no >= $total_no_of_pages1){ echo "class='disabled'"; } ?>>
+                        <a <?php if($page_no < $total_no_of_pages1) { echo "href='?page_no=$next_page1'"; } ?>>Next</a>
+                    </li>
+                    <?php if($page_no1 < $total_no_of_pages1){
+                  echo "<li><a href='?page_no=$total_no_of_pages1'>Last &rsaquo;&rsaquo;</a></li>";
+                  } ?>
+                </ul>
+            </div>
+            <div class="col-md-4">
+
+                <h3>Income Data</h3>
+                <table class="table table-striped table-bordered">
+                    <thead>
+                        <tr>
+                            <th style='width:50px;'>Name</th>
+                            <th style='width:50px;'>Amount</th>
+                            <th style='width:50px;'>Date Created</th>
+                            <th style='width:50px;'>Date End</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+
+                            if (isset($_GET['page_no2']) && $_GET['page_no2']!="") {
+                            $page_no2 = $_GET['page_no2'];
+                            } else {
+                            $page_no2 = 1;
+                            }
+
+                            $total_records_per_page2 = 5;
+                            $offset2 = ($page_no2-1) * $total_records_per_page2;
+                            $previous_page2 = $page_no2 - 1;
+                            $next_page2 = $page_no2 + 1;
+                            $adjacents2 = "2"; 
+
+                            $result_count2 = mysqli_query($con,"SELECT COUNT(*) As total_records FROM `income`");
+                            $total_records2 = mysqli_fetch_array($result_count2);
+                            $total_records2 = $total_records2['total_records'];
+                            $total_no_of_pages2 = ceil($total_records2 / $total_records_per_page2);
+                            $second_last2 = $total_no_of_pages2 - 1; // total page minus 1
+
+                            $result2 = mysqli_query($con,"SELECT * FROM `income` LIMIT $offset2, $total_records_per_page2");
+                            while($row = mysqli_fetch_array($result2)){
+                            echo "<tr>
+                            <td>".$row['name']."</td>
+                            <td>".$row['summary']."</td>
+                            <td>".$row['amount']."</td>
+                              <td>".$row['date_created']."</td>
+                              </tr>";
+                            }
+                            mysqli_close($con);
+                            ?>
+                    </tbody>
+                </table>
+
+                <div style='padding: 10px 20px 0px; border-top: dotted 1px #CCC;'>
+                    <strong>Page <?php echo $page_no2." of ".$total_no_of_pages2; ?></strong>
+                </div>
+
+                <ul class="pagination">
+                    <?php // if($page_no2 > 1){ echo "<li><a href='?page_no2=1'>First Page</a></li>"; } ?>
+
+                    <li <?php if($page_no2 <= 1){ echo "class='disabled'"; } ?>>
+                        <a <?php if($page_no2 > 1){ echo "href='?page_no2=$previous_page2'"; } ?>>Previous</a>
+                    </li>
+
+                    <?php 
+                  if ($total_no_of_pages2 <= 10){  	 
+                  for ($counter2 = 1; $counter2 <= $total_no_of_pages2; $counter2++){
+                  if ($counter2 == $page_no2) {
+                  echo "<li class='active'><a>$counter2</a></li>";	
+                  }else{
+                    echo "<li><a href='?page_no2=$counter2'>$counter2</a></li>";
+                  }
+                  }
+                  }
+                  elseif($total_no_of_pages2 > 10){
+
+                  if($page_no2 <= 4) {			
+                  for ($counter2 = 1; $counter2 < 8; $counter2++){		 
+                  if ($counter2 == $page_no2) {
+                  echo "<li class='active'><a>$counter2</a></li>";	
+                  }else{
+                    echo "<li><a href='?page_no2=$counter2'>$counter2</a></li>";
+                  }
+                  }
+                  echo "<li><a>...</a></li>";
+                  echo "<li><a href='?page_no2=$second_last2'>$second_last2</a></li>";
+                  echo "<li><a href='?page_no2=$total_no_of_pages2'>$total_no_of_pages2</a></li>";
+                  }
+
+                  elseif($page_no2 > 4 && $page_no2 < $total_no_of_pages2 - 4) {		 
+                  echo "<li><a href='?page_no2=1'>1</a></li>";
+                  echo "<li><a href='?page_no2=2'>2</a></li>";
+                  echo "<li><a>...</a></li>";
+                  for ($counter2 = $page_no2 - $adjacents2; $counter2 <= $page_no2 + $adjacents2; $counter2++) {			
+                    if ($counter2 == $page_no2) {
+                  echo "<li class='active'><a>$counter2</a></li>";	
+                  }else{
+                    echo "<li><a href='?page_no2=$counter2'>$counter2</a></li>";
+                  }                  
+                  }
+                  echo "<li><a>...</a></li>";
+                  echo "<li><a href='?page_no2=$second_last2'>$second_last2</a></li>";
+                  echo "<li><a href='?page_no2=$total_no_of_pages2'>$total_no_of_pages2</a></li>";      
+                      }
+
+                  else {
+                  echo "<li><a href='?page_no2=1'>1</a></li>";
+                  echo "<li><a href='?page_no2=2'>2</a></li>";
+                  echo "<li><a>...</a></li>";
+
+                  for ($counter2 = $total_no_of_pages2 - 6; $counter2 <= $total_no_of_pages2; $counter2++) {
+                    if ($counter2 == $page_no2) {
+                  echo "<li class='active'><a>$counter2</a></li>";	
+                  }else{
+                    echo "<li><a href='?page_no2=$counter2'>$counter2</a></li>";
+                  }                   
+                          }
+                      }
+                  }
+                  ?>
+
+                    <li <?php if($page_no2 >= $total_no_of_pages2){ echo "class='disabled'"; } ?>>
+                        <a <?php if($page_no2 < $total_no_of_pages2) { echo "href='?page_no2=$next_page2'"; } ?>>Next</a>
+                    </li>
+                    <?php if($page_no2 < $total_no_of_pages2){
+                  echo "<li><a href='?page_no2=$total_no_of_pages2'>Last &rsaquo;&rsaquo;</a></li>";
+                  } ?>
+                </ul>
+            </div>
+          </div>
+          <hr></hr>
+          
+          <div class="row" >
+          <?php include_once('includes/data-charts.php')?>
+            <div class="col-md-5" id="piechart_div" style="width: 100px; height: 400px;" ></div>
+            <!-- Draw a line to seperate the two divs -->
+            <div class="col-md-7" id="barchart_div" style="height:400px;"></div>
+          </div>
+          
+            <?php require_once('includes/footer.php') ?>
         </div>
     </div>
-</body>
+        <script src="assetsjs/jquery-3.2.1.slim.min.js"></script>
+        <script src="assets/js/popper.min.js"></script>
+        <script src="assets/js/bootstrap.min.js"></script>
+  </body>
 
 </html>

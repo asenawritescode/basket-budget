@@ -1,3 +1,15 @@
+<?
+// Initialize the session
+session_start();
+
+
+// Check if the user is logged in, if not then redirect him to login page
+if($_SESSION["loggedin"] !== true){
+    header("location: login.php");
+    exit;
+}
+?>
+
 <?php require_once 'process.php'; ?>
 <?php $con = new mysqli("localhost","root","","budget_calculator"); ?>
 <?php  if(isset($_SESSION['message'])): ?>
@@ -79,14 +91,16 @@
                             <div class="form-group">
                                 <label for="exampleFormControlSelect1">Category</label>
                                 <select class="form-control" style="height:35px" name="type" id="exampleFormControlSelect1">
-                                <option value="miscellaneous">Miscellaneous</option>
                                 <?php
+                                 if($update == true){echo "<option value='".$type."'>".$type."</option>";}
+                                 else{echo "<option value='miscellaneous'>Miscellaneous</option>";}
+                
                                     $sql = mysqli_query($con, "SELECT name FROM budget");
                                     $row = mysqli_num_rows($sql);
                                     while ($row = mysqli_fetch_array($sql)){
                                     echo "<option value='". $row['name'] ."'>" .$row['name'] ."</option>" ;
                                     }
-                                    ?>
+                                ?>
                                 <!-- Loop through the data avalaible -->
                                 </select>
                             </div>
@@ -96,9 +110,9 @@
                                     placeholder="Enter Amount" required value="<?php echo $amount; ?>">
                             </div>
                             <?php if($update == true): ?>
-                            <button type="submit" name="update" class="btn btn-success btn-block">Update</button>
+                            <button type="submit" name="update_ex" class="btn btn-success btn-block">Update</button>
                             <?php else: ?>
-                            <button type="submit" name="save_ex" class="btn btn-primary btn-block">Save</button>
+                            <button type="submit" name="save_ex" class="btn btn-primary btn-block">Record</button>
                             <?php endif; ?>
                         </form>
                     </div>
@@ -110,7 +124,7 @@
                         <?php 
 
                             if(isset($_SESSION['message'])){
-                                echo    "<div class='alert alert-{$_SESSION['msg_type']} alert-dismissible fade show ' role='alert'>
+                                echo    "<div id='message' class='alert alert-{$_SESSION['msg_type']} alert-dismissible fade show ' role='alert'>
                                             <strong> {$_SESSION['message']} </storng>
                                             <button type='button' class='close' data-dismiss='alert' aria-label='Close'>
                                                 <span aria-hidden='true'>&times;</span>
@@ -118,13 +132,13 @@
                                         </div>
                                         ";
                             }
-
+                            session_unset();
                         ?>
                         <h2>Expenses List</h2>
                         <hr>
                         <?php 
                             
-                            $result = mysqli_query($con, "SELECT * FROM expense");
+                            $result = mysqli_query($con, "SELECT * FROM expense ORDER BY id DESC LIMIT 10");
                         ?>
                         <div class="row justify-content-center">
                             <table class="table">
@@ -137,12 +151,12 @@
                                     </tr>
                                 </thead>
                                 <?php while($row = $result->fetch_assoc()): ?>
-                                <tr>
+                                <tr style="font-weight: 400;">
                                     <td><?php echo $row['name']; ?></td>
                                     <td><?php echo $row['type']; ?></td>
                                     <td> KES <?php echo $row['amount']; ?></td>
                                     <td>
-                                        <a href="index.php?edit=<?php echo $row['id']; ?>"
+                                        <a href="expenses.php?edit_ex=<?php echo $row['id']; ?>"
                                             class="btn btn-success">Update</a>
                                         <a href="process.php?delete_ex=<?php echo $row['id']; ?>"
                                             class="btn btn-danger">Delete</a>
@@ -159,6 +173,7 @@
         <script src="assets/js/jquery-3.2.1.slim.min.js"></script>
         <script src="assets/js/popper.min.js"></script>
         <script src="assets/js/bootstrap.min.js"></script>
+        <script src="includes/js/remove-alert.js"></script>
 </body>
 
 </html>

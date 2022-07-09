@@ -60,7 +60,7 @@ body {
 
 #sidebar .nav a {
     background: none;
-    border-bottom: 1px solid #455A64;
+    border-bottom: 2px solid #455A64;
     color: #CFD8DC;
     font-size: 14px;
     padding: 16px 24px;
@@ -72,7 +72,8 @@ body {
 }
 
 #sidebar .nav a i {
-    margin-right: 16px;
+    margin-right: 20px;
+    margin-left:10px;
 }
 </style>
 <div id="viewport">
@@ -84,19 +85,26 @@ body {
         <ul class="nav">
             <li>
                 <a href="http://localhost/budget/dashboard.php">
-                    <i class="zmdi zmdi-view-dashboard"></i> Dashboard
+                    <i class="zmdi zmdi-view-dashboard"></i>Dashboard
+                </a>
+            </li>
+
+            <li>
+                <a href="http://localhost/budget/income.php">
+                <i class="zmdi zmdi-balance"></i>Income
+                </a>
+            </li>
+
+            <li>
+                <a href="http://localhost/budget/budget.php"> 
+                    <i class="zmdi zmdi-case"></i>Budget
                 </a>
             </li>
             <li>
-                <a href="http://localhost/budget/budget.php">
-                <i class="zmdi zmdi-case"></i> Budget
+                <a href="http://localhost/budget/expenses.php">
+                <i class="zmdi zmdi-balance-wallet"></i> Expense
                 </a>
-            </li>
-            <li>
-                <a href="http://localhost/budget/expenses.php"> 
-                    <i class="zmdi zmdi-balance-wallet"></i> Expenses
-                </a>
-            </li>
+            </li>       
         </ul>
     </div>
 </div>
