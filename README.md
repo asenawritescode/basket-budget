@@ -1,3 +1,3 @@
 # basket-budget
-Budgting system
+Budgeting system
 
